@@ -4,15 +4,49 @@
 
 FROM balenalib/%%BALENA_MACHINE_NAME%%-debian as base
 
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+################################################################################
+# Builder
+################################################################################
+
+FROM base as builder
+
 # Install exfat to support the WD_Black external SSD
-RUN apt-get -q update && apt-get install -yq --no-install-recommends exfat-fuse exfat-utils wget unzip
+RUN apt-get -q update && apt-get install -yq --no-install-recommends build-essential cmake libudev-dev curl file exfat-fuse exfat-utils git
 
-# Download v3.2.2-rc.1 of openethereum
-# TODO validate checksum
-RUN wget https://github.com/openethereum/openethereum/releases/download/v3.2.2-rc.1/openethereum-linux-v3.2.2-rc.1.zip
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=923479
+# https://github.com/balena-io-library/base-images/issues/562
+RUN c_rehash
 
-RUN unzip openethereum-linux-v3.2.2-rc.1.zip
-RUN chmod u+x openethereum
+ENV PATH=/root/.cargo/bin:$PATH
+
+WORKDIR /build/app
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+# download OpenEthereum code
+RUN git clone https://github.com/openethereum/openethereum
+WORKDIR ./openethereum
+
+# build in release mode
+RUN cargo build --release --features final
+
+################################################################################
+# Final image
+################################################################################
+
+FROM base
+
+WORKDIR /app
+
+# Copy binary from builder image
+COPY --from=builder /build/app/openethereum/target/release/openethereum .
+
+# Copy other folders required by the application. Example:
+# COPY --from=builder /build/app/assets assets
 
 COPY run.sh run.sh
 RUN chmod +x run.sh
