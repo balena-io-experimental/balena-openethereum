@@ -5,7 +5,7 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/balena-io-playground/balena-openethereum)
 ![GitHub last commit](https://img.shields.io/github/last-commit/balena-io-playground/balena-openethereum)
-![Master](https://github.com/balena-io-playground/balena-openethereum/actions/workflows/unit.yml/badge.svg?branch=master)
+![Master](https://github.com/balena-io-playground/balena-openethereum/actions/workflows/superliner.yml/badge.svg?branch=master)
 
   <p>
   <a href="https://openethereum.github.io/">OpenEthereum</a> and balena, a match made in heaven.
